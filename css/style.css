@@ -375,19 +375,19 @@ header h1 {
 .lighting-content {
     position: relative;
     z-index: 1;
-    min-height: 360px;
-    display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
-    grid-template-rows: 1fr auto;
-    gap: 12px 20px;
-    padding: 28px 32px 22px;
+    min-height: 380px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 32px 56px 26px 300px;
 }
 
 .lighting-copy {
-    grid-column: 1;
-    grid-row: 1;
-    max-width: 360px;
-    align-self: start;
+    position: absolute;
+    left: 36px;
+    top: 42px;
+    max-width: 280px;
+    z-index: 2;
 }
 
 .lighting-copy h2 {
@@ -395,19 +395,26 @@ header h1 {
     line-height: 1.15;
     font-weight: 800;
     margin-bottom: 10px;
-    text-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    color: #ffffff;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
 }
 
 .lighting-copy p {
-    color: #d5e4ff;
+    color: #ffffff;
     font-size: 15px;
     max-width: 280px;
-    text-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.lighting-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: auto;
 }
 
 .lighting-stage {
-    grid-column: 2;
-    grid-row: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -415,46 +422,45 @@ header h1 {
 }
 
 .bulb {
-    width: 118px;
-    height: 118px;
+    width: 148px;
+    height: 148px;
     border-radius: 50%;
     display: grid;
     place-items: center;
-    background: rgba(12, 24, 48, 0.55);
-    border: 3px solid rgba(186, 205, 235, 0.55);
-    opacity: 0.95;
+    background: linear-gradient(180deg, #f7fafc 0%, #e4ecf6 55%, #d5e0ee 100%);
+    box-shadow:
+        inset 0 4px 10px rgba(255, 255, 255, 0.9),
+        inset 0 -6px 12px rgba(120, 145, 180, 0.18),
+        0 12px 30px rgba(0, 0, 0, 0.28);
     transition: 0.35s ease;
 }
 
-.bulb svg {
-    width: 54px;
-    height: 54px;
-    fill: none;
-    stroke: #c9d7ee;
-    stroke-width: 2.4;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+.bulb .material-symbols-outlined {
+    font-size: 76px;
+    line-height: 1;
+    color: #8b97ab;
+    font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 48;
 }
 
 .bulb.on {
-    background: radial-gradient(circle, #fff3bf 0%, #fbbf24 42%, #b45309 100%);
-    border-color: #fde68a;
+    background: radial-gradient(circle, #fff8dc 0%, #fbbf24 42%, #f59e0b 100%);
     box-shadow:
-        0 0 24px rgba(251, 191, 36, 0.7),
-        0 0 60px rgba(245, 158, 11, 0.45);
-    opacity: 1;
+        0 0 28px rgba(251, 191, 36, 0.75),
+        0 0 70px rgba(245, 158, 11, 0.45);
 }
 
-.bulb.on svg {
-    stroke: #3b2a08;
+.bulb.on .material-symbols-outlined {
+    color: #3b2a08;
+    font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 48;
 }
 
 #lightStatus {
     margin-top: 14px;
-    font-size: 28px;
+    font-size: 30px;
     font-weight: 800;
-    letter-spacing: 0.6px;
-    color: #93a4bf;
+    letter-spacing: 0.8px;
+    color: #ffffff;
+    text-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
 
 #lightStatus.on {
@@ -463,37 +469,55 @@ header h1 {
 }
 
 .lighting-actions {
-    grid-column: 1 / -1;
-    grid-row: 2;
     display: flex;
     justify-content: center;
-    gap: 12px;
+    align-items: center;
+    gap: 14px;
     flex-wrap: wrap;
+    margin-top: 20px;
 }
 
 .btn {
     border: none;
     border-radius: 999px;
-    padding: 12px 20px;
-    font-size: 14px;
+    height: 48px;
+    padding: 0 22px;
+    font-size: 15px;
     font-weight: 700;
+    letter-spacing: 0.2px;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: auto;
+    color: #fff;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22);
+    white-space: nowrap;
+}
+
+.btn .material-symbols-outlined {
+    font-size: 20px;
+    line-height: 1;
 }
 
 .btn-on {
-    background: #16a34a;
-    color: white;
+    background: #22c55e;
+    min-width: 158px;
 }
 
 .btn-off {
-    background: #dc2626;
-    color: white;
+    background: #ef4444;
+    min-width: 158px;
 }
 
 .btn-mic {
     background: #2563eb;
-    color: white;
-    min-width: 170px;
+    min-width: 198px;
+}
+
+.btn:hover {
+    filter: brightness(1.06);
 }
 
 .btn-mic.listening,
@@ -1030,30 +1054,37 @@ td {
     }
 
     .lighting-content {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto auto;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: center;
         min-height: 0;
+        padding: 24px 18px 20px;
     }
 
-    .lighting-copy,
-    .lighting-stage,
-    .lighting-actions {
-        grid-column: 1;
+    .lighting-controls {
+        width: 100%;
     }
 
     .lighting-copy {
-        grid-row: 1;
-    }
-
-    .lighting-stage {
-        grid-row: 2;
+        position: static;
+        max-width: none;
+        margin-bottom: 18px;
     }
 
     .lighting-actions {
-        grid-row: 3;
+        justify-content: center;
     }
 
     .lighting-card {
         background-position: left top;
+    }
+
+    .bulb {
+        width: 128px;
+        height: 128px;
+    }
+
+    .bulb .material-symbols-outlined {
+        font-size: 64px;
     }
 }

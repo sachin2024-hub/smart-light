@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voice-Controlled IoT Lighting System</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
     <link rel="stylesheet" href="css/style.css">
     <script>
         document.documentElement.setAttribute(
@@ -111,20 +111,28 @@
                             <p>Use your voice or the buttons below to control the light.</p>
                         </div>
 
-                        <div class="lighting-stage">
-                            <div id="bulb" class="bulb" aria-hidden="true">
-                                <svg viewBox="0 0 64 64">
-                                    <path d="M32 8c-8.8 0-16 7-16 15.7 0 5.7 3 10.7 7.6 13.5.9.5 1.4 1.5 1.4 2.5V42c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-2.3c0-1 .5-2 1.4-2.5C45 34.4 48 29.4 48 23.7 48 15 40.8 8 32 8z"></path>
-                                    <path d="M27 46h10M28.5 50h7M30 54h4"></path>
-                                </svg>
+                        <div class="lighting-controls">
+                            <div class="lighting-stage">
+                                <div id="bulb" class="bulb" aria-hidden="true">
+                                    <span class="material-symbols-outlined">lightbulb</span>
+                                </div>
+                                <div id="lightStatus">LIGHT OFF</div>
                             </div>
-                            <div id="lightStatus">LIGHT OFF</div>
-                        </div>
 
-                        <div class="lighting-actions">
-                            <button id="micBtn" class="btn btn-mic mic-trigger" type="button">Speak Command</button>
-                            <button id="onBtn" class="btn btn-on" type="button">LIGHT ON</button>
-                            <button id="offBtn" class="btn btn-off" type="button">LIGHT OFF</button>
+                            <div class="lighting-actions">
+                                <button id="micBtn" class="btn btn-mic mic-trigger" type="button">
+                                    <span class="material-symbols-outlined">mic</span>
+                                    <span class="btn-label">Speak Command</span>
+                                </button>
+                                <button id="onBtn" class="btn btn-on" type="button">
+                                    <span class="material-symbols-outlined">lightbulb</span>
+                                    LIGHT ON
+                                </button>
+                                <button id="offBtn" class="btn btn-off" type="button">
+                                    <span class="material-symbols-outlined">lightbulb</span>
+                                    LIGHT OFF
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </article>

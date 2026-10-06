@@ -635,7 +635,12 @@ function setupVoice() {
         micButtons.forEach(function (button) {
             button.classList.add("listening");
         });
-        micBtn.textContent = "Listening...";
+        const micLabel = micBtn.querySelector(".btn-label");
+        if (micLabel) {
+            micLabel.textContent = "Listening...";
+        } else {
+            micBtn.textContent = "Listening...";
+        }
         if (voiceTitle) {
             voiceTitle.textContent = "Listening...";
         }
@@ -672,7 +677,12 @@ function setupVoice() {
         micButtons.forEach(function (button) {
             button.classList.remove("listening");
         });
-        micBtn.textContent = "Speak Command";
+        const micLabel = micBtn.querySelector(".btn-label");
+        if (micLabel) {
+            micLabel.textContent = "Speak Command";
+        } else {
+            micBtn.textContent = "Speak Command";
+        }
         if (voiceTitle) {
             voiceTitle.textContent = "Tap to speak";
         }
