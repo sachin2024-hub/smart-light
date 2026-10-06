@@ -1,0 +1,115 @@
+VOICE-CONTROLLED IOT LIGHTING SYSTEM
+====================================
+
+This prototype already works without hardware.
+When you buy the ESP32, relay, microphone module, and bulb,
+you only fill in Wi-Fi settings and connect the wires.
+
+
+1. TEST NOW (NO HARDWARE)
+-------------------------
+1. Open XAMPP and start Apache + MySQL.
+2. Open Chrome or Edge:
+   http://localhost/smart-light/
+3. Click LIGHT ON / LIGHT OFF, or click Speak Command
+   and say "LIGHT ON" or "LIGHT OFF".
+4. Open Command History. The command should be saved.
+
+The dashboard runs in Simulation Mode until an ESP32
+sends a heartbeat.
+
+
+2. DATABASE
+-----------
+PHP will create the database and tables automatically
+the first time you open the dashboard.
+
+You can also import:
+  database/setup.sql
+in phpMyAdmin if you want to do it manually.
+
+phpMyAdmin: http://localhost/phpmyadmin
+Database name: smart_light_db
+User: root
+Password: (empty, default XAMPP)
+
+
+3. CONNECT THE HARDWARE LATER
+-----------------------------
+Parts:
+- ESP32 DevKit
+- 1-channel relay module
+- Lamp / bulb + socket
+- Optional: UART voice recognition module
+- Shared Wi-Fi for ESP32 and the XAMPP computer
+
+Wiring:
+
+  Relay IN  ---- ESP32 GPIO 26
+  Relay VCC ---- ESP32 5V (or 3.3V if the relay is 3.3V)
+  Relay GND ---- ESP32 GND
+  Relay COM/NO -- bulb live wire  (AC mains: be careful)
+
+  Voice module TX -> ESP32 GPIO 16 (RX2)
+  Voice module RX -> ESP32 GPIO 17 (TX2)
+  Voice module GND -> ESP32 GND
+  Voice module VCC -> 5V or 3.3V as required by the module
+
+Arduino IDE:
+1. Boards Manager: install "esp32" by Espressif Systems
+2. Board: ESP32 Dev Module
+3. Open: esp32/smart_light/smart_light.ino
+4. Edit these 3 values:
+
+   WIFI_SSID     = your Wi-Fi name
+   WIFI_PASSWORD = your Wi-Fi password
+   SERVER_HOST   = IP of this computer, example 192.168.1.10
+
+   Find your PC IP:
+   Windows CMD -> ipconfig -> IPv4 Address
+
+   Do NOT use localhost on the ESP32.
+   localhost on ESP32 means the ESP32 itself, not your PC.
+
+5. Upload the sketch.
+6. Same Wi-Fi for phone/PC and ESP32.
+7. Dashboard should change from
+   "No Hardware Connected" to "ESP32 Connected".
+
+Serial Monitor (115200 baud):
+  Type: LIGHT ON
+  Type: LIGHT OFF
+
+
+4. HOW THE FLOW WORKS
+---------------------
+No ESP32 yet:
+  Voice/button -> PHP -> MySQL history -> dashboard bulb
+
+ESP32 connected:
+  Voice/button -> PHP pending command
+  ESP32 polls pending command
+  ESP32 toggles relay / bulb
+  ESP32 reports status to PHP
+  Dashboard shows live ON/OFF
+  Command is saved in Command History
+
+Voice can come from:
+- Browser microphone (works now)
+- Serial Monitor on ESP32
+- Hardware voice module (set VOICE_SOURCE to 1 in the .ino file)
+
+
+5. PROJECT FILES
+----------------
+index.html                 dashboard
+css/style.css              styles
+js/app.js                  voice + live updates
+api/db.php                 MySQL connection and tables
+api/send_command.php       dashboard voice/button commands
+api/get_status.php         dashboard live status + history
+api/update_light.php       ESP32 reports ON/OFF
+api/get_pending.php        ESP32 reads waiting commands
+api/heartbeat.php          ESP32 online check
+database/setup.sql         optional manual import
+esp32/smart_light.ino      Arduino firmware

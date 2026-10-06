@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice-Controlled IoT Lighting System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        document.documentElement.setAttribute(
+            "data-theme",
+            localStorage.getItem("smartLightTheme") === "light" ? "light" : "dark"
+        );
+    </script>
+</head>
+<body>
+    <header>
+        <div class="brand">
+            <h1>Voice-Controlled IoT Lighting System</h1>
+        </div>
+        <div class="header-actions">
+            <nav>
+                <button id="dashboardBtn" class="active" onclick="showPage('dashboard')">Dashboard</button>
+                <button id="historyBtn" onclick="showPage('history')">Command History</button>
+            </nav>
+            <button id="themeToggle" class="theme-toggle" type="button" title="Switch theme" aria-label="Switch theme">
+                <svg id="iconMoon" class="theme-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M21 14.3A8.5 8.5 0 0 1 9.7 3 7 7 0 1 0 21 14.3z"></path>
+                </svg>
+                <svg id="iconSun" class="theme-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="4.2"></circle>
+                    <path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6"></path>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+        <section id="dashboard" class="page active">
+            <div class="top-row">
+                <div class="panel device-card">
+                    <div>
+                        <strong>Device Status</strong>
+                        <div class="muted" id="modeText">Checking connection...</div>
+                    </div>
+                    <div class="status-pill">
+                        <span id="deviceDot" class="dot"></span>
+                        <span id="deviceText">Checking...</span>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="muted">How to test without hardware</div>
+                    <p style="margin-top:8px;">Use the mic or ON/OFF buttons. When the ESP32 is later connected, this same dashboard will show live relay status.</p>
+                </div>
+            </div>
+
+            <div class="panel bulb-section">
+                <div id="bulb" class="bulb">💡</div>
+                <div id="lightStatus">LIGHT OFF</div>
+
+                <div class="controls">
+                    <button id="micBtn" class="btn btn-mic">Speak Command</button>
+                    <button id="onBtn" class="btn btn-on">LIGHT ON</button>
+                    <button id="offBtn" class="btn btn-off">LIGHT OFF</button>
+                </div>
+
+                <p id="voiceHint" class="voice-hint">
+                    Say <strong>LIGHT ON</strong> or <strong>LIGHT OFF</strong>
+                </p>
+                <div id="statusBox" class="status-box">
+                    <div class="status-box-label">System Message</div>
+                    <div id="toast" class="toast">Waiting for system status...</div>
+                </div>
+            </div>
+
+            <div class="cards">
+                <div class="card panel">
+                    <h3>Latest Voice Command</h3>
+                    <p id="latestCommand">Waiting for command...</p>
+                </div>
+                <div class="card panel">
+                    <h3>Light Status</h3>
+                    <p id="smallLightStatus">OFF</p>
+                </div>
+                <div class="card panel">
+                    <h3>Source</h3>
+                    <p id="latestSource">--</p>
+                </div>
+                <div class="card panel">
+                    <h3>Last Updated</h3>
+                    <p id="lastUpdated">--</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="history" class="page">
+            <div class="panel history-box">
+                <div class="history-header">
+                    <h2>Command History</h2>
+                    <label class="page-size">
+                        Rows
+                        <select id="historyPageSize">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="15">15</option>
+                            <option value="20">20</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="75">75</option>
+                            <option value="100">100</option>
+                        </select>
+                    </label>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Voice Command</th>
+                            <th>Action</th>
+                            <th>Source</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTable"></tbody>
+                </table>
+                <div class="pager">
+                    <div id="historySummary" class="pager-summary">No commands yet.</div>
+                    <div id="historyPager" class="pager-buttons"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
