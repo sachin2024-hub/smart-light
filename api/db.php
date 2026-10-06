@@ -98,6 +98,14 @@ if ($statusColumn && $statusColumn->num_rows > 0) {
     }
 }
 
+$actionColumn = $conn->query("SHOW COLUMNS FROM command_history LIKE 'light_action'");
+if ($actionColumn && $actionColumn->num_rows > 0) {
+    $actionRow = $actionColumn->fetch_assoc();
+    if (stripos($actionRow["Type"], "NONE") === false) {
+        $conn->query("ALTER TABLE command_history MODIFY light_action ENUM('ON', 'OFF', 'NONE') NOT NULL");
+    }
+}
+
 function isDeviceOnline($conn)
 {
     $result = $conn->query("

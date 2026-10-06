@@ -7,7 +7,7 @@ USE smart_light_db;
 CREATE TABLE IF NOT EXISTS command_history (
     id INT AUTO_INCREMENT PRIMARY KEY,
     voice_command VARCHAR(255) NOT NULL,
-    light_action ENUM('ON', 'OFF') NOT NULL,
+        light_action ENUM('ON', 'OFF', 'NONE') NOT NULL,
     source VARCHAR(50) NOT NULL DEFAULT 'dashboard',
     status VARCHAR(50) NOT NULL DEFAULT 'Successful',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

@@ -88,7 +88,10 @@
                         </div>
                         <div class="stat-right">
                             <span class="stat-icon material-symbols-outlined">wifi</span>
-                            <strong id="connectionLabel">Wi-Fi</strong>
+                            <div id="connectionPill" class="status-pill">
+                                <span id="connectionDot" class="dot"></span>
+                                <span id="connectionLabel">Offline</span>
+                            </div>
                         </div>
                     </article>
                     <article class="stat-card">
@@ -97,7 +100,7 @@
                             <p id="currentStatusSub">The light is currently turned off.</p>
                         </div>
                         <div class="stat-right">
-                            <span class="stat-icon material-symbols-outlined">lightbulb</span>
+                            <span id="currentStatusIcon" class="stat-icon status-bulb material-symbols-outlined">lightbulb</span>
                             <strong id="currentStatusTitle">Light OFF</strong>
                         </div>
                     </article>

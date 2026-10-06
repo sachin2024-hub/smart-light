@@ -875,6 +875,19 @@ header h1 {
     font-size: 22px;
 }
 
+.status-bulb {
+    background: #2f6bff;
+    color: #ffffff;
+    font-variation-settings: "FILL" 1, "wght" 500, "GRAD" 0, "opsz" 24;
+    transition: background 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.status-bulb.on {
+    background: #f6c453;
+    color: #fffdf6;
+    box-shadow: 0 0 0 4px rgba(246, 196, 83, 0.22), 0 0 18px rgba(251, 191, 36, 0.85);
+}
+
 .metric-card .stat-icon {
     margin-bottom: 8px;
 }
@@ -987,6 +1000,73 @@ td {
 
 .success {
     color: var(--success);
+    font-weight: 700;
+}
+
+.source-pill,
+.light-pill,
+.result-ok,
+.result-bad {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.source-pill {
+    padding: 5px 12px;
+    color: #fff;
+}
+
+.source-voice {
+    background: #2563eb;
+}
+
+.source-button {
+    background: #7c3aed;
+}
+
+.source-esp32 {
+    background: #0f766e;
+}
+
+.light-pill {
+    min-width: 58px;
+    padding: 5px 12px;
+}
+
+.light-pill.on {
+    background: #22c55e;
+    color: #fff;
+}
+
+.light-pill.off {
+    background: #64748b;
+    color: #f8fafc;
+}
+
+.light-pill.none {
+    background: transparent;
+    color: var(--muted);
+    min-width: 0;
+    padding: 0;
+}
+
+.result-ok {
+    color: #4ade80;
+    font-weight: 700;
+}
+
+.result-ok .material-symbols-outlined {
+    font-size: 18px;
+}
+
+.result-bad {
+    color: #fb7185;
     font-weight: 700;
 }
 

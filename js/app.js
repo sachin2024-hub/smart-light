@@ -118,6 +118,7 @@ function updateLightUI(action) {
 
     const currentTitle = document.getElementById("currentStatusTitle");
     const currentSub = document.getElementById("currentStatusSub");
+    const currentIcon = document.getElementById("currentStatusIcon");
     const relayState = document.getElementById("relayState");
     const relayValue = document.getElementById("relayValue");
 
@@ -128,6 +129,9 @@ function updateLightUI(action) {
         currentSub.textContent = isOn
             ? "The light is currently turned on."
             : "The light is currently turned off.";
+    }
+    if (currentIcon) {
+        currentIcon.classList.toggle("on", isOn);
     }
     if (relayState) {
         relayState.textContent = isOn
@@ -319,6 +323,13 @@ async function sendCommand(command, source) {
         if (!data.success) {
             setToast(data.message || "Command failed.", true, "sticky");
             showVoiceResult(command, false, "", data.message || "Unknown command.");
+            if (data.voice_command) {
+                document.getElementById("latestCommand").textContent = data.voice_command;
+            }
+            if (data.saved) {
+                loadHistory();
+                loadRecentVoice();
+            }
             return;
         }
 
@@ -389,7 +400,15 @@ async function loadSystemData() {
 
         const connectionLabel = document.getElementById("connectionLabel");
         const connectionSub = document.getElementById("connectionSub");
+        const connectionDot = document.getElementById("connectionDot");
+        const connectionPill = document.getElementById("connectionPill");
 
+        if (connectionDot) {
+            connectionDot.classList.toggle("online", online);
+        }
+        if (connectionPill) {
+            connectionPill.classList.toggle("online", online);
+        }
         if (connectionLabel) {
             connectionLabel.textContent = online ? "Wi-Fi" : "Offline";
         }
@@ -442,15 +461,30 @@ function renderHistoryRows(history) {
 
     history.forEach(function (record) {
         const row = document.createElement("tr");
-        const actionClass = record.light_action === "ON" ? "on-text" : "off-text";
+        const sourceKey = String(record.source || "voice").toLowerCase();
+        const sourceLabel = sourceKey.charAt(0).toUpperCase() + sourceKey.slice(1);
+        const sourceKind = sourceKey === "button" ? "button" : (sourceKey === "esp32" ? "esp32" : "voice");
+        const action = record.light_action;
+        const isOn = action === "ON";
+        const isKnown = action === "ON" || action === "OFF";
+        const statusText = record.status || "Successful (Simulated)";
+        const statusKey = String(statusText).toLowerCase();
+        const unknown = statusKey.indexOf("unknown") !== -1 || !isKnown;
+        const failed = statusKey.indexOf("fail") !== -1 || unknown;
+        const actionHtml = unknown
+            ? "<span class=\"light-pill off\">OFF</span>"
+            : "<span class=\"light-pill " + (isOn ? "on" : "off") + "\">" + escapeHtml(action) + "</span>";
 
         row.innerHTML =
             "<td>" + escapeHtml(recordDate(record)) + "</td>" +
             "<td>" + escapeHtml(recordTime(record)) + "</td>" +
             "<td>" + escapeHtml(record.voice_command) + "</td>" +
-            "<td class=\"" + actionClass + "\">" + escapeHtml(record.light_action) + "</td>" +
-            "<td>" + escapeHtml(record.source || "dashboard") + "</td>" +
-            "<td class=\"success\">" + escapeHtml(record.status) + "</td>";
+            "<td>" + actionHtml + "</td>" +
+            "<td><span class=\"source-pill source-" + sourceKind + "\">" + escapeHtml(sourceLabel) + "</span></td>" +
+            "<td>" + (failed
+                ? "<span class=\"result-bad\">" + escapeHtml(statusText) + "</span>"
+                : "<span class=\"result-ok\"><span class=\"material-symbols-outlined\">check_circle</span>" + escapeHtml(statusText) + "</span>") +
+            "</td>";
 
         historyTable.appendChild(row);
     });
@@ -728,7 +762,8 @@ async function loadRecentVoice() {
         }
 
         list.innerHTML = rows.map(function (record) {
-            const ok = String(record.status).toLowerCase().indexOf("fail") === -1;
+            const statusKey = String(record.status).toLowerCase();
+            const ok = statusKey.indexOf("fail") === -1 && statusKey.indexOf("unknown") === -1;
             return (
                 '<div class="recent-voice-item">' +
                     "<div><strong>" + escapeHtml(record.voice_command) + "</strong></div>" +

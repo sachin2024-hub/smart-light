@@ -13,6 +13,7 @@ $result = $conn->query("
     SELECT *
     FROM command_history
     WHERE status = 'Pending'
+      AND light_action IN ('ON', 'OFF')
     ORDER BY id ASC
     LIMIT 1
     FOR UPDATE
