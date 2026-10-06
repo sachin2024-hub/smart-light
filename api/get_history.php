@@ -17,7 +17,13 @@ if ($page < 1) {
     $page = 1;
 }
 
-$totalResult = $conn->query("SELECT COUNT(*) AS total FROM command_history");
+$source = isset($_GET["source"]) ? strtolower(trim($_GET["source"])) : "";
+$allowedSources = ["voice", "button", "dashboard", "esp32", "serial"];
+$sourceFilter = in_array($source, $allowedSources, true) ? $source : "";
+
+$whereSql = $sourceFilter !== "" ? "WHERE source = '" . $conn->real_escape_string($sourceFilter) . "'" : "";
+
+$totalResult = $conn->query("SELECT COUNT(*) AS total FROM command_history $whereSql");
 $totalRow = $totalResult ? $totalResult->fetch_assoc() : ["total" => 0];
 $total = intval($totalRow["total"]);
 $pages = $total > 0 ? (int) ceil($total / $perPage) : 1;
@@ -31,6 +37,7 @@ $offset = ($page - 1) * $perPage;
 $historyQuery = "
     SELECT *
     FROM command_history
+    $whereSql
     ORDER BY id DESC
     LIMIT $perPage OFFSET $offset
 ";

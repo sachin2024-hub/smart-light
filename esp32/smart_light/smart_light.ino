@@ -31,6 +31,7 @@
 
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <stdio.h>
 
 const char* WIFI_SSID = "YOUR_WIFI_NAME";
 const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
@@ -120,8 +121,33 @@ String jsonValue(const String& body, const String& key) {
   return body.substring(start, end);
 }
 
+String encodeParam(const String& value) {
+  String out = "";
+  for (unsigned int i = 0; i < value.length(); i++) {
+    char c = value[i];
+    if (isalnum(c) || c == '-' || c == '_' || c == '.' || c == ':') {
+      out += c;
+    } else if (c == ' ') {
+      out += "%20";
+    } else {
+      char buf[8];
+      sprintf(buf, "%%%02X", (unsigned char)c);
+      out += buf;
+    }
+  }
+  return out;
+}
+
 void sendHeartbeat() {
-  String url = serverUrl("/api/heartbeat.php?light=") + (lightOn ? "ON" : "OFF");
+  String url = serverUrl("/api/heartbeat.php");
+  url += "?light=" + String(lightOn ? "ON" : "OFF");
+  url += "&ip=" + encodeParam(WiFi.localIP().toString());
+  url += "&ssid=" + encodeParam(WiFi.SSID());
+  url += "&rssi=" + String(WiFi.RSSI());
+  url += "&mac=" + encodeParam(WiFi.macAddress());
+  url += "&uptime=" + String(millis() / 1000);
+  url += "&heap=" + String(ESP.getFreeHeap());
+  url += "&fw=1.0.0";
   httpGet(url);
 }
 

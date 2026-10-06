@@ -24,14 +24,30 @@ function showPage(page) {
         element.classList.remove("active");
     });
 
-    document.querySelectorAll("nav button").forEach(function (button) {
+    document.querySelectorAll(".nav-item").forEach(function (button) {
         button.classList.remove("active");
     });
 
     document.getElementById(page).classList.add("active");
 
+    const titles = {
+        dashboard: ["Dashboard", "Monitor and control your IoT lighting system using voice commands."],
+        voice: ["Voice Control", "Use your microphone to control the light with voice commands."],
+        device: ["Device Status", "Monitor the ESP32 connection and real-time relay status."],
+        history: ["Command History", "View the list of all voice and button commands sent to the system."]
+    };
+
+    const meta = titles[page] || titles.dashboard;
+    document.getElementById("pageTitle").textContent = meta[0];
+    document.getElementById("pageSubtitle").textContent = meta[1];
+
     if (page === "dashboard") {
         document.getElementById("dashboardBtn").classList.add("active");
+    } else if (page === "voice") {
+        document.getElementById("voiceBtn").classList.add("active");
+        loadRecentVoice();
+    } else if (page === "device") {
+        document.getElementById("deviceBtn").classList.add("active");
     } else {
         document.getElementById("historyBtn").classList.add("active");
         loadHistory();
@@ -66,6 +82,15 @@ function applyTheme(theme) {
     const next = theme === "light" ? "light" : "dark";
     document.documentElement.setAttribute("data-theme", next);
     localStorage.setItem("smartLightTheme", next);
+
+    const toggle = document.getElementById("themeToggle");
+    if (!toggle) {
+        return;
+    }
+
+    const isLight = next === "light";
+    toggle.title = isLight ? "Switch to Dark Mode" : "Switch to Light Mode";
+    toggle.setAttribute("aria-label", isLight ? "Switch to Dark Mode" : "Switch to Light Mode");
 }
 
 function setupThemeToggle() {
@@ -85,6 +110,39 @@ function updateLightUI(action) {
     document.getElementById("lightStatus").classList.toggle("on", isOn);
     document.getElementById("lightStatus").textContent = isOn ? "LIGHT ON" : "LIGHT OFF";
     document.getElementById("smallLightStatus").textContent = isOn ? "ON" : "OFF";
+
+    const lightingCard = document.getElementById("lightingCard");
+    if (lightingCard) {
+        lightingCard.classList.toggle("is-on", isOn);
+    }
+
+    const currentTitle = document.getElementById("currentStatusTitle");
+    const currentSub = document.getElementById("currentStatusSub");
+    const relayState = document.getElementById("relayState");
+    const relayValue = document.getElementById("relayValue");
+
+    if (currentTitle) {
+        currentTitle.textContent = isOn ? "Light ON" : "Light OFF";
+    }
+    if (currentSub) {
+        currentSub.textContent = isOn
+            ? "The light is currently turned on."
+            : "The light is currently turned off.";
+    }
+    if (relayState) {
+        relayState.textContent = isOn
+            ? "The light is currently turned on."
+            : "The light is currently turned off.";
+    }
+    if (relayValue) {
+        relayValue.textContent = isOn ? "ON" : "OFF";
+        relayValue.className = isOn ? "on-text" : "off-text";
+    }
+
+    const relayToggle = document.getElementById("relayToggle");
+    if (relayToggle) {
+        relayToggle.classList.toggle("on", isOn);
+    }
 }
 
 function escapeHtml(value) {
@@ -93,6 +151,107 @@ function escapeHtml(value) {
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
+}
+
+function dash(value) {
+    if (value === null || value === undefined || value === "") {
+        return "--";
+    }
+    return String(value);
+}
+
+function formatUptime(seconds) {
+    const total = parseInt(seconds, 10);
+    if (Number.isNaN(total)) {
+        return "--";
+    }
+
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+
+    if (hours <= 0 && minutes <= 0) {
+        return "Just started";
+    }
+
+    const hourLabel = hours === 1 ? "hour" : "hours";
+    const minuteLabel = minutes === 1 ? "minute" : "minutes";
+    return hours + " " + hourLabel + ", " + minutes + " " + minuteLabel;
+}
+
+function formatSignal(rssi) {
+    if (rssi === null || rssi === undefined || rssi === "") {
+        return "--";
+    }
+
+    const value = parseInt(rssi, 10);
+    let quality = "Weak";
+    if (value >= -60) {
+        quality = "Good";
+    } else if (value >= -75) {
+        quality = "Fair";
+    }
+
+    return quality + " (" + value + " dBm)";
+}
+
+function formatHeap(bytes) {
+    const value = parseInt(bytes, 10);
+    if (!value) {
+        return "--";
+    }
+
+    if (value >= 1024) {
+        return Math.round(value / 1024) + " KB";
+    }
+
+    return value + " bytes";
+}
+
+function setPill(id, online, onlineText, offlineText) {
+    const pill = document.getElementById(id);
+    if (!pill) {
+        return;
+    }
+
+    pill.classList.toggle("online", online);
+    const label = pill.querySelector("span:last-child");
+    const dot = pill.querySelector(".dot");
+    if (label) {
+        label.textContent = online ? onlineText : offlineText;
+    }
+    if (dot) {
+        dot.classList.toggle("online", online);
+    }
+}
+
+function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.textContent = value;
+    }
+}
+
+function updateDevicePage(data, online) {
+    const device = data.device || {};
+    const lastSeen = data.last_seen || device.last_seen || "--";
+
+    setPill("esp32Pill", online, "Connected", "No Hardware");
+    setPill("netPill", online, "Connected", "Offline");
+    setPill("deviceResponse", online, "Online", "Offline");
+
+    setText("esp32Ip", online ? dash(device.ip_address) : "--");
+    setText("esp32Uptime", online ? formatUptime(device.uptime_seconds) : "--");
+    setText("deviceLastSeen", dash(lastSeen));
+    setText("esp32Firmware", device.firmware ? device.firmware : "1.0.0");
+    setText("esp32Platform", "ESP32 (Wi-Fi)");
+    setText("netSsid", online ? dash(device.ssid) : "--");
+    setText("netSignal", online ? formatSignal(device.rssi) : "--");
+    setText("netType", "Wi-Fi");
+    setText("netMac", online ? dash(device.mac_address) : "--");
+    setText("hardwareUpdate", dash(lastSeen));
+    setText("sysUptime", online ? formatUptime(device.uptime_seconds) : "--");
+    setText("sysLastSeen", dash(lastSeen));
+    setText("sysHeap", online ? formatHeap(device.free_heap) : "--");
 }
 
 async function sendCommand(command, source) {
@@ -114,14 +273,22 @@ async function sendCommand(command, source) {
 
         if (!data.success) {
             setToast(data.message || "Command failed.", true, "sticky");
+            showVoiceResult(command, false, "", data.message || "Unknown command.");
             return;
         }
 
         updateLightUI(data.light_action);
         document.getElementById("latestCommand").textContent = data.voice_command;
         setToast(data.message, false, "info");
+        showVoiceResult(
+            data.voice_command,
+            true,
+            data.light_action,
+            data.light_action === "ON" ? "Light turned ON" : "Light turned OFF"
+        );
         loadSystemData();
         loadHistory();
+        loadRecentVoice();
     } catch (error) {
         setToast("Cannot reach PHP API. Start Apache in XAMPP.", true, "connection");
     }
@@ -160,17 +327,32 @@ async function loadSystemData() {
         const deviceDot = document.getElementById("deviceDot");
         const modeText = document.getElementById("modeText");
 
+        const statusPill = deviceText ? deviceText.closest(".status-pill") : null;
+
         if (deviceDot) {
             deviceDot.classList.toggle("online", online);
         }
+        if (statusPill) {
+            statusPill.classList.toggle("online", online);
+        }
         if (deviceText) {
-            deviceText.textContent = online ? "ESP32 Connected" : "No Hardware Connected";
+            deviceText.textContent = online ? "Connected" : "No Hardware";
         }
         if (modeText) {
-            modeText.textContent = online
-                ? "Hardware mode: commands go to the ESP32 and relay."
-                : "Simulation mode: no ESP32 yet. Dashboard will still turn the bulb on/off.";
+            modeText.textContent = online ? "Light is active and ready." : "Waiting for ESP32";
         }
+
+        const connectionLabel = document.getElementById("connectionLabel");
+        const connectionSub = document.getElementById("connectionSub");
+
+        if (connectionLabel) {
+            connectionLabel.textContent = online ? "Wi-Fi" : "Offline";
+        }
+        if (connectionSub) {
+            connectionSub.textContent = online ? "Connected to ESP32" : "Waiting for ESP32";
+        }
+
+        updateDevicePage(data, online);
 
         updateLightUI(data.light || "OFF");
 
@@ -186,6 +368,9 @@ async function loadSystemData() {
 
         if (document.getElementById("history").classList.contains("active")) {
             loadHistory();
+        }
+        if (document.getElementById("voice").classList.contains("active")) {
+            loadRecentVoice();
         }
     } catch (error) {
         if (location.protocol === "file:") {
@@ -339,10 +524,14 @@ function setupHistoryPager() {
 
 function setupVoice() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const micButtons = document.querySelectorAll(".mic-trigger");
     const micBtn = document.getElementById("micBtn");
+    const voiceTitle = document.getElementById("voiceListenTitle");
 
     if (!SpeechRecognition) {
-        micBtn.disabled = true;
+        micButtons.forEach(function (button) {
+            button.disabled = true;
+        });
         document.getElementById("voiceHint").textContent =
             "Voice works in Chrome or Edge. Use the ON/OFF buttons for now.";
         return;
@@ -353,11 +542,28 @@ function setupVoice() {
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
-    micBtn.addEventListener("click", function () {
+    function startListening() {
         setToast("Listening... say LIGHT ON or LIGHT OFF", false, "info");
-        micBtn.classList.add("listening");
+        micButtons.forEach(function (button) {
+            button.classList.add("listening");
+        });
         micBtn.textContent = "Listening...";
-        recognition.start();
+        if (voiceTitle) {
+            voiceTitle.textContent = "Listening...";
+        }
+        const hint = document.getElementById("voiceHintLine");
+        if (hint) {
+            hint.textContent = "Speak now. Try saying a command below.";
+        }
+        try {
+            recognition.start();
+        } catch (error) {
+            setToast("Microphone is already listening.", false, "info");
+        }
+    }
+
+    micButtons.forEach(function (button) {
+        button.addEventListener("click", startListening);
     });
 
     recognition.addEventListener("result", function (event) {
@@ -375,9 +581,78 @@ function setupVoice() {
     });
 
     recognition.addEventListener("end", function () {
-        micBtn.classList.remove("listening");
+        micButtons.forEach(function (button) {
+            button.classList.remove("listening");
+        });
         micBtn.textContent = "Speak Command";
+        if (voiceTitle) {
+            voiceTitle.textContent = "Tap to speak";
+        }
     });
+}
+
+function showVoiceResult(said, success, action, message) {
+    const box = document.getElementById("voiceResult");
+    if (!box) {
+        return;
+    }
+
+    box.hidden = false;
+    box.classList.toggle("error", !success);
+    document.getElementById("voiceSaidText").textContent = '"' + said + '"';
+    document.getElementById("voiceResultLabel").textContent = success
+        ? "Command recognized"
+        : (message || "Unknown command");
+    document.getElementById("voiceResultAction").textContent = success
+        ? (action === "ON" ? "Light turned ON" : "Light turned OFF")
+        : "Try saying LIGHT ON or LIGHT OFF.";
+
+    const icon = document.querySelector("#voiceResultStatus .material-symbols-outlined");
+    if (icon) {
+        icon.textContent = success ? "check_circle" : "error";
+    }
+}
+
+async function loadRecentVoice() {
+    const list = document.getElementById("recentVoiceList");
+    if (!list) {
+        return;
+    }
+
+    try {
+        const response = await fetch(API.history + "?page=1&per_page=5&source=voice&t=" + Date.now());
+        const data = await response.json();
+        const rows = Array.isArray(data.history) ? data.history : [];
+
+        if (!rows.length) {
+            list.innerHTML = '<p class="empty-row">No voice commands yet. Tap the microphone and say LIGHT ON.</p>';
+            return;
+        }
+
+        list.innerHTML = rows.map(function (record) {
+            const ok = String(record.status).toLowerCase().indexOf("fail") === -1;
+            return (
+                '<div class="recent-voice-item">' +
+                    "<div><strong>" + escapeHtml(record.voice_command) + "</strong></div>" +
+                    "<time>" + escapeHtml(record.created_at) + "</time>" +
+                    '<span class="' + (ok ? "badge-success" : "badge-fail") + '">' +
+                        (ok ? "Success" : "Failed") +
+                    "</span>" +
+                "</div>"
+            );
+        }).join("");
+    } catch (error) {
+        list.innerHTML = '<p class="empty-row">Cannot load recent voice commands.</p>';
+    }
+}
+
+function tickClock() {
+    const clock = document.getElementById("liveClockText") || document.getElementById("liveClock");
+    if (!clock) {
+        return;
+    }
+
+    clock.textContent = new Date().toLocaleString();
 }
 
 document.getElementById("onBtn").addEventListener("click", function () {
@@ -388,9 +663,29 @@ document.getElementById("offBtn").addEventListener("click", function () {
     sendCommand("LIGHT OFF", "button");
 });
 
+const relayToggle = document.getElementById("relayToggle");
+if (relayToggle) {
+    relayToggle.addEventListener("click", function () {
+        const isOn = document.getElementById("relayValue").textContent === "ON";
+        sendCommand(isOn ? "LIGHT OFF" : "LIGHT ON", "button");
+    });
+}
+
+document.querySelectorAll(".example-cmd").forEach(function (button) {
+    button.addEventListener("click", function () {
+        sendCommand(
+            button.getAttribute("data-command"),
+            button.getAttribute("data-source") || "button"
+        );
+    });
+});
+
 setupThemeToggle();
 setupHistoryPager();
 setupVoice();
+tickClock();
 loadSystemData();
 loadHistory();
+loadRecentVoice();
 setInterval(loadSystemData, 1000);
+setInterval(tickClock, 1000);

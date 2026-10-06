@@ -40,6 +40,7 @@ echo json_encode([
     "mode" => $online ? "hardware" : "simulation",
     "device_online" => $online,
     "last_seen" => getLastSeen($conn),
+    "device" => getDeviceInfo($conn),
     "latest" => $latest,
     "history" => $history
 ]);

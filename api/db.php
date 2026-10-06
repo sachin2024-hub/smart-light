@@ -55,6 +55,25 @@ $conn->query("
 
 $conn->query("INSERT IGNORE INTO device_status (id, light_state) VALUES (1, 'OFF')");
 
+function ensureColumn($conn, $table, $column, $definition)
+{
+    $safeTable = $conn->real_escape_string($table);
+    $safeColumn = $conn->real_escape_string($column);
+    $result = $conn->query("SHOW COLUMNS FROM `$safeTable` LIKE '$safeColumn'");
+
+    if ($result && $result->num_rows === 0) {
+        $conn->query("ALTER TABLE `$safeTable` ADD COLUMN `$safeColumn` $definition");
+    }
+}
+
+ensureColumn($conn, "device_status", "ip_address", "VARCHAR(45) NULL");
+ensureColumn($conn, "device_status", "ssid", "VARCHAR(64) NULL");
+ensureColumn($conn, "device_status", "rssi", "INT NULL");
+ensureColumn($conn, "device_status", "mac_address", "VARCHAR(32) NULL");
+ensureColumn($conn, "device_status", "uptime_seconds", "INT NULL");
+ensureColumn($conn, "device_status", "free_heap", "INT NULL");
+ensureColumn($conn, "device_status", "firmware", "VARCHAR(20) NULL");
+
 $sourceColumn = $conn->query("SHOW COLUMNS FROM command_history LIKE 'source'");
 if ($sourceColumn && $sourceColumn->num_rows === 0) {
     $conn->query("ALTER TABLE command_history ADD COLUMN source VARCHAR(50) NOT NULL DEFAULT 'dashboard' AFTER light_action");
@@ -131,9 +150,54 @@ function setLightState($conn, $state)
     $stmt->close();
 }
 
-function markDeviceSeen($conn)
+function getDeviceInfo($conn)
 {
-    $conn->query("UPDATE device_status SET last_seen = NOW() WHERE id = 1");
+    $result = $conn->query("SELECT * FROM device_status WHERE id = 1");
+
+    if (!$result || $result->num_rows === 0) {
+        return [
+            "light_state" => "OFF",
+            "last_seen" => null
+        ];
+    }
+
+    return $result->fetch_assoc();
+}
+
+function saveDeviceTelemetry($conn, $data)
+{
+    $ip = $data["ip_address"] !== null ? $data["ip_address"] : "";
+    $ssid = $data["ssid"] !== null ? $data["ssid"] : "";
+    $rssi = $data["rssi"] === null ? "" : strval($data["rssi"]);
+    $mac = $data["mac_address"] !== null ? $data["mac_address"] : "";
+    $uptime = $data["uptime_seconds"] === null ? "" : strval($data["uptime_seconds"]);
+    $heap = $data["free_heap"] === null ? "" : strval($data["free_heap"]);
+    $firmware = $data["firmware"] !== null ? $data["firmware"] : "";
+
+    $stmt = $conn->prepare("
+        UPDATE device_status
+        SET ip_address = NULLIF(?, ''),
+            ssid = NULLIF(?, ''),
+            rssi = NULLIF(?, ''),
+            mac_address = NULLIF(?, ''),
+            uptime_seconds = NULLIF(?, ''),
+            free_heap = NULLIF(?, ''),
+            firmware = NULLIF(?, '')
+        WHERE id = 1
+    ");
+
+    $stmt->bind_param(
+        "sssssss",
+        $ip,
+        $ssid,
+        $rssi,
+        $mac,
+        $uptime,
+        $heap,
+        $firmware
+    );
+    $stmt->execute();
+    $stmt->close();
 }
 
 function resolveStalePending($conn)

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voice-Controlled IoT Lighting System</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
     <link rel="stylesheet" href="css/style.css">
     <script>
         document.documentElement.setAttribute(
@@ -13,121 +14,338 @@
     </script>
 </head>
 <body>
-    <header>
-        <div class="brand">
-            <h1>Voice-Controlled IoT Lighting System</h1>
-        </div>
-        <div class="header-actions">
-            <nav>
-                <button id="dashboardBtn" class="active" onclick="showPage('dashboard')">Dashboard</button>
-                <button id="historyBtn" onclick="showPage('history')">Command History</button>
-            </nav>
-            <button id="themeToggle" class="theme-toggle" type="button" title="Switch theme" aria-label="Switch theme">
-                <svg id="iconMoon" class="theme-icon" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M21 14.3A8.5 8.5 0 0 1 9.7 3 7 7 0 1 0 21 14.3z"></path>
-                </svg>
-                <svg id="iconSun" class="theme-icon" viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="12" cy="12" r="4.2"></circle>
-                    <path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6"></path>
-                </svg>
-            </button>
-        </div>
-    </header>
-
-    <div class="container">
-        <section id="dashboard" class="page active">
-            <div class="top-row">
-                <div class="panel device-card">
-                    <div>
-                        <strong>Device Status</strong>
-                        <div class="muted" id="modeText">Checking connection...</div>
-                    </div>
-                    <div class="status-pill">
-                        <span id="deviceDot" class="dot"></span>
-                        <span id="deviceText">Checking...</span>
-                    </div>
-                </div>
-                <div class="panel">
-                    <div class="muted">How to test without hardware</div>
-                    <p style="margin-top:8px;">Use the mic or ON/OFF buttons. When the ESP32 is later connected, this same dashboard will show live relay status.</p>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M9 18h6M10 21h4"></path>
+                        <path d="M12 3a6 6 0 0 0-3.8 10.6c.5.4.8 1 .8 1.7V16h6v-.7c0-.7.3-1.3.8-1.7A6 6 0 0 0 12 3z"></path>
+                    </svg>
+                </span>
+                <div class="brand-copy">
+                    <strong>Voice-Controlled</strong>
+                    <span>IoT Lighting System</span>
                 </div>
             </div>
+            <nav>
+                <button id="dashboardBtn" class="nav-item active" type="button" onclick="showPage('dashboard')">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    Dashboard
+                </button>
+                <button id="voiceBtn" class="nav-item" type="button" onclick="showPage('voice')">
+                    <span class="material-symbols-outlined">mic</span>
+                    Voice Control
+                </button>
+                <button id="deviceBtn" class="nav-item" type="button" onclick="showPage('device')">
+                    <span class="material-symbols-outlined">developer_board</span>
+                    Device Status
+                </button>
+                <button id="historyBtn" class="nav-item" type="button" onclick="showPage('history')">
+                    <span class="material-symbols-outlined">history</span>
+                    Command History
+                </button>
+            </nav>
+        </aside>
 
-            <div class="panel bulb-section">
-                <div id="bulb" class="bulb">💡</div>
-                <div id="lightStatus">LIGHT OFF</div>
+        <div class="main">
+            <header>
+                <div class="header-copy">
+                    <h1 id="pageTitle">Dashboard</h1>
+                    <p id="pageSubtitle">Monitor and control your IoT lighting system using voice commands.</p>
+                </div>
+                <div class="header-actions">
+                    <div id="liveClock" class="live-clock">
+                        <span class="material-symbols-outlined">schedule</span>
+                        <span id="liveClockText"></span>
+                    </div>
+                    <button id="themeToggle" class="theme-toggle" type="button" title="Switch to Light Mode" aria-label="Toggle theme">
+                        <span class="material-symbols-outlined theme-icon-sun" aria-hidden="true">light_mode</span>
+                        <span class="material-symbols-outlined theme-icon-moon" aria-hidden="true">dark_mode</span>
+                    </button>
+                </div>
+            </header>
 
-                <div class="controls">
-                    <button id="micBtn" class="btn btn-mic">Speak Command</button>
-                    <button id="onBtn" class="btn btn-on">LIGHT ON</button>
-                    <button id="offBtn" class="btn btn-off">LIGHT OFF</button>
+            <section id="dashboard" class="page active">
+                <div class="stat-row">
+                    <article class="stat-card">
+                        <div>
+                            <h3>Device Status</h3>
+                            <p id="modeText">Waiting for ESP32</p>
+                        </div>
+                        <div class="stat-right">
+                            <span class="stat-icon material-symbols-outlined">developer_board</span>
+                            <div class="status-pill">
+                                <span id="deviceDot" class="dot"></span>
+                                <span id="deviceText">Checking...</span>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="stat-card">
+                        <div>
+                            <h3>Connection</h3>
+                            <p id="connectionSub">Waiting for ESP32</p>
+                        </div>
+                        <div class="stat-right">
+                            <span class="stat-icon material-symbols-outlined">wifi</span>
+                            <strong id="connectionLabel">Wi-Fi</strong>
+                        </div>
+                    </article>
+                    <article class="stat-card">
+                        <div>
+                            <h3>Current Status</h3>
+                            <p id="currentStatusSub">The light is currently turned off.</p>
+                        </div>
+                        <div class="stat-right">
+                            <span class="stat-icon material-symbols-outlined">lightbulb</span>
+                            <strong id="currentStatusTitle">Light OFF</strong>
+                        </div>
+                    </article>
                 </div>
 
-                <p id="voiceHint" class="voice-hint">
-                    Say <strong>LIGHT ON</strong> or <strong>LIGHT OFF</strong>
-                </p>
+                <article id="lightingCard" class="lighting-card">
+                    <div class="lighting-overlay"></div>
+                    <div class="lighting-content">
+                        <div class="lighting-copy">
+                            <h2>Smart Lighting Control</h2>
+                            <p>Use your voice or the buttons below to control the light.</p>
+                        </div>
+
+                        <div class="lighting-stage">
+                            <div id="bulb" class="bulb" aria-hidden="true">
+                                <svg viewBox="0 0 64 64">
+                                    <path d="M32 8c-8.8 0-16 7-16 15.7 0 5.7 3 10.7 7.6 13.5.9.5 1.4 1.5 1.4 2.5V42c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-2.3c0-1 .5-2 1.4-2.5C45 34.4 48 29.4 48 23.7 48 15 40.8 8 32 8z"></path>
+                                    <path d="M27 46h10M28.5 50h7M30 54h4"></path>
+                                </svg>
+                            </div>
+                            <div id="lightStatus">LIGHT OFF</div>
+                        </div>
+
+                        <div class="lighting-actions">
+                            <button id="micBtn" class="btn btn-mic mic-trigger" type="button">Speak Command</button>
+                            <button id="onBtn" class="btn btn-on" type="button">LIGHT ON</button>
+                            <button id="offBtn" class="btn btn-off" type="button">LIGHT OFF</button>
+                        </div>
+                    </div>
+                </article>
+
+                <p id="voiceHint" class="voice-hint">Say <strong>LIGHT ON</strong> or <strong>LIGHT OFF</strong></p>
                 <div id="statusBox" class="status-box">
                     <div class="status-box-label">System Message</div>
                     <div id="toast" class="toast">Waiting for system status...</div>
                 </div>
-            </div>
 
-            <div class="cards">
-                <div class="card panel">
-                    <h3>Latest Voice Command</h3>
-                    <p id="latestCommand">Waiting for command...</p>
+                <div class="metric-row">
+                    <article class="metric-card">
+                        <span class="stat-icon material-symbols-outlined">record_voice_over</span>
+                        <h3>Latest Command</h3>
+                        <p id="latestCommand">Waiting for command...</p>
+                    </article>
+                    <article class="metric-card">
+                        <span class="stat-icon material-symbols-outlined">lightbulb</span>
+                        <h3>Light Status</h3>
+                        <p id="smallLightStatus">OFF</p>
+                    </article>
+                    <article class="metric-card">
+                        <span class="stat-icon material-symbols-outlined">input</span>
+                        <h3>Source</h3>
+                        <p id="latestSource">--</p>
+                    </article>
+                    <article class="metric-card">
+                        <span class="stat-icon material-symbols-outlined">schedule</span>
+                        <h3>Last Updated</h3>
+                        <p id="lastUpdated">--</p>
+                    </article>
                 </div>
-                <div class="card panel">
-                    <h3>Light Status</h3>
-                    <p id="smallLightStatus">OFF</p>
-                </div>
-                <div class="card panel">
-                    <h3>Source</h3>
-                    <p id="latestSource">--</p>
-                </div>
-                <div class="card panel">
-                    <h3>Last Updated</h3>
-                    <p id="lastUpdated">--</p>
-                </div>
-            </div>
-        </section>
+            </section>
 
-        <section id="history" class="page">
-            <div class="panel history-box">
-                <div class="history-header">
-                    <h2>Command History</h2>
-                    <label class="page-size">
-                        Rows
-                        <select id="historyPageSize">
-                            <option value="5">5</option>
-                            <option value="10" selected>10</option>
-                            <option value="15">15</option>
-                            <option value="20">20</option>
-                            <option value="25">25</option>
-                            <option value="50">50</option>
-                            <option value="75">75</option>
-                            <option value="100">100</option>
-                        </select>
-                    </label>
+            <section id="voice" class="page">
+                <div class="voice-layout">
+                    <article class="voice-hero panel">
+                        <button id="voiceMicBtn" class="mic-orb mic-trigger" type="button" aria-label="Speak command">
+                            <span class="material-symbols-outlined">mic</span>
+                        </button>
+                        <h2 id="voiceListenTitle">Tap to speak</h2>
+                        <p id="voiceHintLine">Speak now. Try saying a command below.</p>
+                        <div id="voiceResult" class="voice-result" hidden>
+                            <p class="voice-said">You said: <strong id="voiceSaidText">--</strong></p>
+                            <p id="voiceResultStatus" class="voice-ok">
+                                <span class="material-symbols-outlined">check_circle</span>
+                                <span id="voiceResultLabel">Command recognized</span>
+                            </p>
+                            <p id="voiceResultAction">Light turned ON</p>
+                        </div>
+                    </article>
+                    <article class="panel example-panel">
+                        <h3>Example Commands</h3>
+                        <ul class="example-list">
+                            <li>
+                                <button type="button" class="example-row example-cmd" data-command="Turn on the light" data-source="voice">
+                                    <span class="example-icon material-symbols-outlined">graphic_eq</span>
+                                    <span>
+                                        <strong>“Turn on the light”</strong>
+                                        <small>Turns the light ON</small>
+                                    </span>
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" class="example-row example-cmd" data-command="Turn off the light" data-source="voice">
+                                    <span class="example-icon material-symbols-outlined">graphic_eq</span>
+                                    <span>
+                                        <strong>“Turn off the light”</strong>
+                                        <small>Turns the light OFF</small>
+                                    </span>
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" class="example-row example-cmd" data-command="Light on" data-source="voice">
+                                    <span class="example-icon material-symbols-outlined">graphic_eq</span>
+                                    <span>
+                                        <strong>“Light on”</strong>
+                                        <small>Turns the light ON</small>
+                                    </span>
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" class="example-row example-cmd" data-command="Light off" data-source="voice">
+                                    <span class="example-icon material-symbols-outlined">graphic_eq</span>
+                                    <span>
+                                        <strong>“Light off”</strong>
+                                        <small>Turns the light OFF</small>
+                                    </span>
+                                </button>
+                            </li>
+                        </ul>
+                    </article>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Date & Time</th>
-                            <th>Voice Command</th>
-                            <th>Action</th>
-                            <th>Source</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyTable"></tbody>
-                </table>
-                <div class="pager">
-                    <div id="historySummary" class="pager-summary">No commands yet.</div>
-                    <div id="historyPager" class="pager-buttons"></div>
+                <article class="panel recent-voice-box">
+                    <h3>Recent Voice Commands</h3>
+                    <div id="recentVoiceList" class="recent-voice-list">
+                        <p class="empty-row">No voice commands yet. Tap the microphone and say LIGHT ON.</p>
+                    </div>
+                </article>
+            </section>
+
+            <section id="device" class="page">
+                <div class="device-grid">
+                    <article class="panel">
+                        <div class="card-head">
+                            <div class="card-title">
+                                <span class="card-icon"><span class="material-symbols-outlined">memory</span></span>
+                                <h3>ESP32 Information</h3>
+                            </div>
+                            <div id="esp32Pill" class="status-pill">
+                                <span class="dot"></span>
+                                <span>No Hardware</span>
+                            </div>
+                        </div>
+                        <dl class="spec-list">
+                            <div><dt>IP Address</dt><dd id="esp32Ip">--</dd></div>
+                            <div><dt>Uptime</dt><dd id="esp32Uptime">--</dd></div>
+                            <div><dt>Last Seen</dt><dd id="deviceLastSeen">--</dd></div>
+                            <div><dt>Firmware Version</dt><dd id="esp32Firmware">1.0.0</dd></div>
+                            <div><dt>Platform</dt><dd id="esp32Platform">ESP32 (Wi-Fi)</dd></div>
+                        </dl>
+                    </article>
+                    <article class="panel">
+                        <div class="card-head">
+                            <div class="card-title">
+                                <span class="card-icon"><span class="material-symbols-outlined">wifi</span></span>
+                                <h3>Network Information</h3>
+                            </div>
+                            <div id="netPill" class="status-pill">
+                                <span class="dot"></span>
+                                <span>Offline</span>
+                            </div>
+                        </div>
+                        <dl class="spec-list">
+                            <div><dt>SSID</dt><dd id="netSsid">--</dd></div>
+                            <div><dt>Signal Strength</dt><dd id="netSignalWrap"><span class="material-symbols-outlined signal-icon">signal_cellular_alt</span><span id="netSignal">--</span></dd></div>
+                            <div><dt>Connection Type</dt><dd id="netType">Wi-Fi</dd></div>
+                            <div><dt>MAC Address</dt><dd id="netMac">--</dd></div>
+                        </dl>
+                    </article>
+                    <article class="panel">
+                        <div class="card-head">
+                            <div class="card-title">
+                                <span class="card-icon"><span class="material-symbols-outlined">lightbulb</span></span>
+                                <h3>Relay / Light Status</h3>
+                            </div>
+                        </div>
+                        <dl class="spec-list">
+                            <div>
+                                <dt>Relay State</dt>
+                                <dd>
+                                    <button id="relayToggle" class="relay-switch" type="button" aria-label="Toggle relay">
+                                        <span class="relay-track"><span class="relay-thumb"></span></span>
+                                        <span id="relayValue">OFF</span>
+                                    </button>
+                                </dd>
+                            </div>
+                            <div>
+                                <dt>Device Response</dt>
+                                <dd id="deviceResponse" class="status-pill">
+                                    <span class="dot"></span>
+                                    <span>Offline</span>
+                                </dd>
+                            </div>
+                            <div><dt>Last Hardware Update</dt><dd id="hardwareUpdate">--</dd></div>
+                        </dl>
+                    </article>
+                    <article class="panel">
+                        <div class="card-head">
+                            <div class="card-title">
+                                <span class="card-icon"><span class="material-symbols-outlined">settings</span></span>
+                                <h3>System Information</h3>
+                            </div>
+                        </div>
+                        <dl class="spec-list">
+                            <div><dt>Device</dt><dd>ESP32</dd></div>
+                            <div><dt>Uptime</dt><dd id="sysUptime">--</dd></div>
+                            <div><dt>Last Seen</dt><dd id="sysLastSeen">--</dd></div>
+                            <div><dt>Free Heap</dt><dd id="sysHeap">--</dd></div>
+                        </dl>
+                    </article>
                 </div>
-            </div>
-        </section>
+            </section>
+
+            <section id="history" class="page">
+                <div class="panel history-box">
+                    <div class="history-header">
+                        <h2>Command History</h2>
+                        <label class="page-size">
+                            Rows
+                            <select id="historyPageSize">
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                                <option value="15">15</option>
+                                <option value="20">20</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="75">75</option>
+                                <option value="100">100</option>
+                            </select>
+                        </label>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Voice Command</th>
+                                <th>Action</th>
+                                <th>Source</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTable"></tbody>
+                    </table>
+                    <div class="pager">
+                        <div id="historySummary" class="pager-summary">No commands yet.</div>
+                        <div id="historyPager" class="pager-buttons"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
     </div>
 
     <script src="js/app.js"></script>
