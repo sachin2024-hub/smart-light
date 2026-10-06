@@ -327,10 +327,27 @@
                             </select>
                         </label>
                     </div>
+                    <div class="history-filters">
+                        <input id="historySearch" type="search" placeholder="Search command...">
+                        <select id="historyAction">
+                            <option value="">All actions</option>
+                            <option value="ON">ON</option>
+                            <option value="OFF">OFF</option>
+                        </select>
+                        <select id="historySource">
+                            <option value="">All sources</option>
+                            <option value="voice">voice</option>
+                            <option value="button">button</option>
+                            <option value="esp32">esp32</option>
+                        </select>
+                        <input id="historyDate" type="date">
+                        <button id="historyClearFilters" class="filter-clear" type="button">Clear</button>
+                    </div>
                     <table>
                         <thead>
                             <tr>
-                                <th>Date & Time</th>
+                                <th>Date</th>
+                                <th>Time</th>
                                 <th>Voice Command</th>
                                 <th>Action</th>
                                 <th>Source</th>

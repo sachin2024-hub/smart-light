@@ -1,5 +1,7 @@
 <?php
 
+date_default_timezone_set("Asia/Manila");
+
 $host = "localhost";
 $username = "root";
 $password = "";
@@ -32,6 +34,7 @@ if ($conn->connect_error) {
 $conn->query("CREATE DATABASE IF NOT EXISTS `$database` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
 $conn->select_db($database);
 $conn->set_charset("utf8mb4");
+$conn->query("SET time_zone = '+08:00'");
 
 $conn->query("
     CREATE TABLE IF NOT EXISTS command_history (

@@ -153,6 +153,51 @@ function escapeHtml(value) {
         .replace(/"/g, "&quot;");
 }
 
+function formatDate(value) {
+    if (!value) {
+        return "--";
+    }
+    return String(value).split(/[ T]/)[0] || "--";
+}
+
+function formatTime(value) {
+    if (!value) {
+        return "--";
+    }
+
+    const parts = String(value).trim().split(/[ T]/);
+    if (parts.length < 2) {
+        if (/[ap]m/i.test(String(value))) {
+            return String(value);
+        }
+        return "--";
+    }
+
+    const timePart = parts[1];
+    const match = timePart.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+    if (!match) {
+        return timePart;
+    }
+
+    let hour = parseInt(match[1], 10);
+    const minute = match[2];
+    const second = match[3] || "00";
+    const ampm = hour >= 12 ? "PM" : "AM";
+    hour = hour % 12;
+    if (hour === 0) {
+        hour = 12;
+    }
+    return hour + ":" + minute + ":" + second + " " + ampm;
+}
+
+function recordDate(record) {
+    return record.command_date || formatDate(record.created_at);
+}
+
+function recordTime(record) {
+    return record.command_time || formatTime(record.created_at);
+}
+
 function dash(value) {
     if (value === null || value === undefined || value === "") {
         return "--";
@@ -358,7 +403,8 @@ async function loadSystemData() {
 
         if (data.latest) {
             document.getElementById("latestCommand").textContent = data.latest.voice_command;
-            document.getElementById("lastUpdated").textContent = data.latest.created_at;
+            document.getElementById("lastUpdated").textContent =
+                recordDate(data.latest) + "  " + recordTime(data.latest);
             document.getElementById("latestSource").textContent = data.latest.source || "--";
         } else {
             document.getElementById("latestCommand").textContent = "Waiting for command...";
@@ -390,7 +436,7 @@ function renderHistoryRows(history) {
     historyTable.innerHTML = "";
 
     if (!history.length) {
-        historyTable.innerHTML = '<tr><td class="empty-row" colspan="5">No commands yet. Try LIGHT ON.</td></tr>';
+        historyTable.innerHTML = '<tr><td class="empty-row" colspan="6">No matching commands.</td></tr>';
         return;
     }
 
@@ -399,7 +445,8 @@ function renderHistoryRows(history) {
         const actionClass = record.light_action === "ON" ? "on-text" : "off-text";
 
         row.innerHTML =
-            "<td>" + escapeHtml(record.created_at) + "</td>" +
+            "<td>" + escapeHtml(recordDate(record)) + "</td>" +
+            "<td>" + escapeHtml(recordTime(record)) + "</td>" +
             "<td>" + escapeHtml(record.voice_command) + "</td>" +
             "<td class=\"" + actionClass + "\">" + escapeHtml(record.light_action) + "</td>" +
             "<td>" + escapeHtml(record.source || "dashboard") + "</td>" +
@@ -476,12 +523,31 @@ function renderHistoryPager(data) {
 
 async function loadHistory() {
     try {
-        const response = await fetch(
-            API.history +
-                "?page=" + historyPage +
-                "&per_page=" + historyPerPage +
-                "&t=" + Date.now()
-        );
+        const search = document.getElementById("historySearch");
+        const action = document.getElementById("historyAction");
+        const source = document.getElementById("historySource");
+        const date = document.getElementById("historyDate");
+
+        const params = new URLSearchParams({
+            page: String(historyPage),
+            per_page: String(historyPerPage),
+            t: String(Date.now())
+        });
+
+        if (search && search.value.trim()) {
+            params.set("q", search.value.trim());
+        }
+        if (action && action.value) {
+            params.set("action", action.value);
+        }
+        if (source && source.value) {
+            params.set("source", source.value);
+        }
+        if (date && date.value) {
+            params.set("date", date.value);
+        }
+
+        const response = await fetch(API.history + "?" + params.toString());
         const data = await response.json();
 
         if (!data.success) {
@@ -498,11 +564,33 @@ async function loadHistory() {
 }
 
 function setupHistoryPager() {
-    document.getElementById("historyPageSize").addEventListener("change", function () {
-        historyPerPage = parseInt(this.value, 10);
+    function resetAndLoad() {
         historyPage = 1;
         lastPagerKey = "";
         loadHistory();
+    }
+
+    document.getElementById("historyPageSize").addEventListener("change", function () {
+        historyPerPage = parseInt(this.value, 10);
+        resetAndLoad();
+    });
+
+    let searchTimer = null;
+    document.getElementById("historySearch").addEventListener("input", function () {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(resetAndLoad, 250);
+    });
+
+    document.getElementById("historyAction").addEventListener("change", resetAndLoad);
+    document.getElementById("historySource").addEventListener("change", resetAndLoad);
+    document.getElementById("historyDate").addEventListener("change", resetAndLoad);
+
+    document.getElementById("historyClearFilters").addEventListener("click", function () {
+        document.getElementById("historySearch").value = "";
+        document.getElementById("historyAction").value = "";
+        document.getElementById("historySource").value = "";
+        document.getElementById("historyDate").value = "";
+        resetAndLoad();
     });
 
     document.getElementById("historyPager").addEventListener("click", function (event) {
@@ -634,7 +722,7 @@ async function loadRecentVoice() {
             return (
                 '<div class="recent-voice-item">' +
                     "<div><strong>" + escapeHtml(record.voice_command) + "</strong></div>" +
-                    "<time>" + escapeHtml(record.created_at) + "</time>" +
+                    "<time>" + escapeHtml(recordDate(record)) + " · " + escapeHtml(recordTime(record)) + "</time>" +
                     '<span class="' + (ok ? "badge-success" : "badge-fail") + '">' +
                         (ok ? "Success" : "Failed") +
                     "</span>" +
@@ -652,7 +740,16 @@ function tickClock() {
         return;
     }
 
-    clock.textContent = new Date().toLocaleString();
+    clock.textContent = new Date().toLocaleString("en-PH", {
+        timeZone: "Asia/Manila",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true
+    });
 }
 
 document.getElementById("onBtn").addEventListener("click", function () {

@@ -21,7 +21,36 @@ $source = isset($_GET["source"]) ? strtolower(trim($_GET["source"])) : "";
 $allowedSources = ["voice", "button", "dashboard", "esp32", "serial"];
 $sourceFilter = in_array($source, $allowedSources, true) ? $source : "";
 
-$whereSql = $sourceFilter !== "" ? "WHERE source = '" . $conn->real_escape_string($sourceFilter) . "'" : "";
+$action = isset($_GET["action"]) ? strtoupper(trim($_GET["action"])) : "";
+$actionFilter = ($action === "ON" || $action === "OFF") ? $action : "";
+
+$date = isset($_GET["date"]) ? trim($_GET["date"]) : "";
+$dateFilter = preg_match("/^\d{4}-\d{2}-\d{2}$/", $date) ? $date : "";
+
+$search = isset($_GET["q"]) ? trim($_GET["q"]) : "";
+if (strlen($search) > 80) {
+    $search = substr($search, 0, 80);
+}
+
+$clauses = [];
+
+if ($sourceFilter !== "") {
+    $clauses[] = "source = '" . $conn->real_escape_string($sourceFilter) . "'";
+}
+
+if ($actionFilter !== "") {
+    $clauses[] = "light_action = '" . $conn->real_escape_string($actionFilter) . "'";
+}
+
+if ($dateFilter !== "") {
+    $clauses[] = "DATE(created_at) = '" . $conn->real_escape_string($dateFilter) . "'";
+}
+
+if ($search !== "") {
+    $clauses[] = "voice_command LIKE '%" . $conn->real_escape_string($search) . "%'";
+}
+
+$whereSql = count($clauses) > 0 ? ("WHERE " . implode(" AND ", $clauses)) : "";
 
 $totalResult = $conn->query("SELECT COUNT(*) AS total FROM command_history $whereSql");
 $totalRow = $totalResult ? $totalResult->fetch_assoc() : ["total" => 0];
@@ -35,7 +64,15 @@ if ($page > $pages) {
 $offset = ($page - 1) * $perPage;
 
 $historyQuery = "
-    SELECT *
+    SELECT
+        id,
+        voice_command,
+        light_action,
+        source,
+        status,
+        created_at,
+        DATE_FORMAT(created_at, '%Y-%m-%d') AS command_date,
+        DATE_FORMAT(created_at, '%h:%i:%s %p') AS command_time
     FROM command_history
     $whereSql
     ORDER BY id DESC

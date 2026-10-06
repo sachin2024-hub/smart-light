@@ -9,7 +9,15 @@ $online = isDeviceOnline($conn);
 $light = getLightState($conn);
 
 $latestQuery = "
-    SELECT *
+    SELECT
+        id,
+        voice_command,
+        light_action,
+        source,
+        status,
+        created_at,
+        DATE_FORMAT(created_at, '%Y-%m-%d') AS command_date,
+        DATE_FORMAT(created_at, '%h:%i:%s %p') AS command_time
     FROM command_history
     ORDER BY id DESC
     LIMIT 1

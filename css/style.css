@@ -898,13 +898,38 @@ header h1 {
     font-weight: 700;
 }
 
-.page-size select {
+.history-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.history-filters input,
+.history-filters select,
+.filter-clear {
     background: var(--status-bg);
     color: var(--text);
     border: 1px solid var(--panel-border);
     border-radius: 8px;
     padding: 8px 10px;
+    font-size: 13px;
+}
+
+.history-filters input[type="search"] {
+    min-width: 180px;
+    flex: 1;
+}
+
+.filter-clear {
+    cursor: pointer;
     font-weight: 700;
+}
+
+.filter-clear:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+    color: #fff;
 }
 
 table {
