@@ -465,15 +465,13 @@ function renderHistoryRows(history) {
         const sourceLabel = sourceKey.charAt(0).toUpperCase() + sourceKey.slice(1);
         const sourceKind = sourceKey === "button" ? "button" : (sourceKey === "esp32" ? "esp32" : "voice");
         const action = record.light_action;
-        const isOn = action === "ON";
         const isKnown = action === "ON" || action === "OFF";
         const statusText = record.status || "Successful (Simulated)";
         const statusKey = String(statusText).toLowerCase();
         const unknown = statusKey.indexOf("unknown") !== -1 || !isKnown;
         const failed = statusKey.indexOf("fail") !== -1 || unknown;
-        const actionHtml = unknown
-            ? "<span class=\"light-pill off\">OFF</span>"
-            : "<span class=\"light-pill " + (isOn ? "on" : "off") + "\">" + escapeHtml(action) + "</span>";
+        const shownAction = isKnown ? action : "OFF";
+        const actionHtml = "<span class=\"light-pill " + (shownAction === "ON" ? "on" : "off") + "\">" + escapeHtml(shownAction) + "</span>";
 
         row.innerHTML =
             "<td>" + escapeHtml(recordDate(record)) + "</td>" +

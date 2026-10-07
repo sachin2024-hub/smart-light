@@ -39,14 +39,19 @@ if (!in_array($source, $allowedSources, true)) {
 $action = parseLightAction($command);
 
 if ($action === null) {
-    $id = saveCommand($conn, $command, "NONE", $source, "Unknown command");
+    $kept = getLightState($conn);
+    if ($kept !== "ON" && $kept !== "OFF") {
+        $kept = "OFF";
+    }
+
+    $id = saveCommand($conn, $command, $kept, $source, "Unknown command");
 
     echo json_encode([
         "success" => false,
         "saved" => true,
         "id" => $id,
         "voice_command" => $command,
-        "light_action" => "NONE",
+        "light_action" => $kept,
         "source" => $source,
         "status" => "Unknown command",
         "message" => "Unknown command. Try LIGHT ON or LIGHT OFF."
