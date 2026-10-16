@@ -569,16 +569,112 @@ header h1 {
     margin-bottom: 6px;
 }
 
-.toast {
-    min-height: 22px;
-    font-size: 14px;
-    line-height: 1.45;
-    color: var(--toast);
+.toast-host {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: min(380px, calc(100vw - 32px));
+    pointer-events: none;
 }
 
-.toast.error {
-    color: var(--toast-error);
-    font-weight: 700;
+.popup-toast {
+    pointer-events: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 12px 12px 14px;
+    border-radius: 14px;
+    background: var(--status-bg, #0b1a36);
+    background-color: #0b1a36;
+    color: #e6efff;
+    border: 1px solid var(--status-border);
+    border-left: 4px solid #ef4444;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    font-size: 14px;
+    line-height: 1.4;
+    animation: popup-in 0.35s ease-out both;
+}
+
+.popup-toast.popup-error {
+    border-left-color: #ef4444;
+    background-color: #2a1220;
+}
+
+.popup-toast.popup-success {
+    border-left-color: #22c55e;
+    background-color: #0d2a22;
+}
+
+.popup-toast.hide {
+    animation: popup-out 0.3s ease-in both;
+}
+
+.popup-icon {
+    font-size: 22px;
+    flex: 0 0 auto;
+}
+
+.popup-error .popup-icon {
+    color: #f87171;
+}
+
+.popup-success .popup-icon {
+    color: #4ade80;
+}
+
+.popup-text {
+    flex: 1;
+    padding-top: 2px;
+    word-break: break-word;
+}
+
+.popup-close {
+    flex: 0 0 auto;
+    background: none;
+    border: 0;
+    color: #9fb3d6;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 6px;
+    display: grid;
+    place-items: center;
+}
+
+.popup-close:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.popup-close .material-symbols-outlined {
+    font-size: 18px;
+}
+
+@keyframes popup-in {
+    from { opacity: 0; transform: translateX(40px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes popup-out {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(20px); }
+}
+
+@media (max-width: 600px) {
+    .toast-host {
+        top: 8px;
+        right: 8px;
+        left: 8px;
+        width: auto;
+    }
+
+    .popup-toast {
+        font-size: 13px;
+        padding: 10px 10px 10px 12px;
+    }
 }
 
 .metric-card {

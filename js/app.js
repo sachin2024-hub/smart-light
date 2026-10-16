@@ -67,15 +67,71 @@ function setToast(message, isError, kind) {
     lastToastIsError = Boolean(isError);
     toastKind = kind || (isError ? "sticky" : "info");
 
-    const toast = document.getElementById("toast");
-    const statusBox = document.getElementById("statusBox");
-
-    toast.textContent = message;
-    toast.classList.toggle("error", lastToastIsError);
-
-    if (statusBox) {
-        statusBox.classList.toggle("error", lastToastIsError);
+    // Progress/info messages are not shown; only errors pop up.
+    if (lastToastIsError) {
+        showPopup(message, "error", toastKind === "connection" ? 30000 : 8000);
     }
+}
+
+const activePopups = {};
+const popupLastShown = {};
+
+function showPopup(message, type, cooldown) {
+    const host = document.getElementById("toastHost");
+    if (!host) {
+        return;
+    }
+
+    const key = type + "|" + message;
+    const now = Date.now();
+    // Skip duplicates that are visible or were shown very recently.
+    if (activePopups[key] || (popupLastShown[key] && now - popupLastShown[key] < (cooldown || 0))) {
+        return;
+    }
+    popupLastShown[key] = now;
+
+    const isError = type === "error";
+    const el = document.createElement("div");
+    el.className = "popup-toast " + (isError ? "popup-error" : "popup-success");
+    el.setAttribute("role", isError ? "alert" : "status");
+
+    const icon = document.createElement("span");
+    icon.className = "material-symbols-outlined popup-icon";
+    icon.textContent = isError ? "error" : "check_circle";
+
+    const text = document.createElement("div");
+    text.className = "popup-text";
+    text.textContent = message;
+
+    const close = document.createElement("button");
+    close.type = "button";
+    close.className = "popup-close";
+    close.setAttribute("aria-label", "Dismiss notification");
+    close.innerHTML = '<span class="material-symbols-outlined">close</span>';
+
+    el.appendChild(icon);
+    el.appendChild(text);
+    el.appendChild(close);
+    host.appendChild(el);
+    activePopups[key] = true;
+
+    let removed = false;
+    let timer = null;
+    function dismiss() {
+        if (removed) {
+            return;
+        }
+        removed = true;
+        clearTimeout(timer);
+        delete activePopups[key];
+        el.classList.add("hide");
+        setTimeout(function () {
+            el.remove();
+        }, 300);
+    }
+
+    close.addEventListener("click", dismiss);
+    timer = setTimeout(dismiss, 4500);
 }
 
 function applyTheme(theme) {
@@ -321,7 +377,12 @@ async function sendCommand(command, source) {
         const data = await response.json();
 
         if (!data.success) {
-            setToast(data.message || "Command failed.", true, "sticky");
+            const notRecognized = /unknown|missing/i.test(data.message || "");
+            setToast(
+                notRecognized ? "Command not recognized. Please say LIGHT ON or LIGHT OFF." : (data.message || "Command failed."),
+                true,
+                "sticky"
+            );
             showVoiceResult(command, false, "", data.message || "Unknown command.");
             if (data.voice_command) {
                 document.getElementById("latestCommand").textContent = data.voice_command;
@@ -336,6 +397,7 @@ async function sendCommand(command, source) {
         updateLightUI(data.light_action);
         document.getElementById("latestCommand").textContent = data.voice_command;
         setToast(data.message, false, "info");
+        showPopup(data.light_action === "ON" ? "Light turned ON successfully." : "Light turned OFF successfully.", "success", 0);
         showVoiceResult(
             data.voice_command,
             true,
@@ -698,10 +760,18 @@ function setupVoice() {
     });
 
     recognition.addEventListener("error", function (event) {
-        if (event.error === "not-allowed") {
-            setToast("Microphone permission blocked. Allow mic access in the browser.", true, "sticky");
+        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+            setToast("Microphone access denied. Please allow microphone permission.", true, "sticky");
+        } else if (event.error === "no-speech") {
+            setToast("No speech detected. Please try again.", true, "sticky");
+        } else if (event.error === "aborted") {
+            return;
+        } else if (event.error === "audio-capture") {
+            setToast("No microphone found. Please connect a microphone and try again.", true, "sticky");
+        } else if (event.error === "network") {
+            setToast("Speech recognition network error. Check your connection and try again.", true, "sticky");
         } else {
-            setToast("Voice error: " + event.error, true, "sticky");
+            setToast("Speech recognition failed. Please try again.", true, "sticky");
         }
     });
 
