@@ -129,6 +129,11 @@ function isDeviceOnline($conn)
     return $age >= 0 && $age <= 10;
 }
 
+function markDeviceSeen($conn)
+{
+    $conn->query("UPDATE device_status SET last_seen = NOW() WHERE id = 1");
+}
+
 function getLightState($conn)
 {
     $result = $conn->query("SELECT light_state, last_seen FROM device_status WHERE id = 1");

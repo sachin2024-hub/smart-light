@@ -68,8 +68,11 @@ if ($online) {
 } else {
     $status = "Successful (Simulated)";
     $message = "No ESP32 connected. Command simulated on dashboard.";
-    setLightState($conn, $action);
 }
+
+// Update the stored state right away so the dashboard poll does not flip
+// back to the old value while the ESP32 is still picking up the command.
+setLightState($conn, $action);
 
 $id = saveCommand($conn, $command, $action, $source, $status);
 

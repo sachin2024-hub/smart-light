@@ -6,6 +6,7 @@ jsonHeaders();
 $light = isset($_GET["light"]) ? strtoupper(trim($_GET["light"])) : "";
 
 markDeviceSeen($conn);
+error_log("smart-light heartbeat from " . $_SERVER["REMOTE_ADDR"]);
 
 if ($light === "ON" || $light === "OFF") {
     setLightState($conn, $light);

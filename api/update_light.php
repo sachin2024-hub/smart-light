@@ -23,7 +23,9 @@ if ($command === "") {
 markDeviceSeen($conn);
 setLightState($conn, $status);
 
-if ($id <= 0) {
+// Voice/serial commands made on the device are new records; they must not
+// take over a dashboard command that is still waiting for the ESP32.
+if ($id <= 0 && $source !== "voice" && $source !== "serial") {
     $existing = $conn->query("
         SELECT id
         FROM command_history

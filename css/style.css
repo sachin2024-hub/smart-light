@@ -378,15 +378,15 @@ header h1 {
     min-height: 380px;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    padding: 32px 56px 26px 300px;
+    justify-content: center;
+    padding: 32px 20px 26px 460px;
 }
 
 .lighting-copy {
     position: absolute;
     left: 36px;
     top: 42px;
-    max-width: 280px;
+    max-width: 600px;
     z-index: 2;
 }
 

@@ -34,10 +34,6 @@
                     <span class="material-symbols-outlined">dashboard</span>
                     Dashboard
                 </button>
-                <button id="voiceBtn" class="nav-item" type="button" onclick="showPage('voice')">
-                    <span class="material-symbols-outlined">mic</span>
-                    Voice Control
-                </button>
                 <button id="deviceBtn" class="nav-item" type="button" onclick="showPage('device')">
                     <span class="material-symbols-outlined">developer_board</span>
                     Device Status
@@ -124,10 +120,6 @@
                             </div>
 
                             <div class="lighting-actions">
-                                <button id="micBtn" class="btn btn-mic mic-trigger" type="button">
-                                    <span class="material-symbols-outlined">mic</span>
-                                    <span class="btn-label">Speak Command</span>
-                                </button>
                                 <button id="onBtn" class="btn btn-on" type="button">
                                     <span class="material-symbols-outlined">lightbulb</span>
                                     LIGHT ON
@@ -165,73 +157,6 @@
                         <p id="lastUpdated">--</p>
                     </article>
                 </div>
-            </section>
-
-            <section id="voice" class="page">
-                <div class="voice-layout">
-                    <article class="voice-hero panel">
-                        <button id="voiceMicBtn" class="mic-orb mic-trigger" type="button" aria-label="Speak command">
-                            <span class="material-symbols-outlined">mic</span>
-                        </button>
-                        <h2 id="voiceListenTitle">Tap to speak</h2>
-                        <p id="voiceHintLine">Speak now. Try saying a command below.</p>
-                        <div id="voiceResult" class="voice-result" hidden>
-                            <p class="voice-said">You said: <strong id="voiceSaidText">--</strong></p>
-                            <p id="voiceResultStatus" class="voice-ok">
-                                <span class="material-symbols-outlined">check_circle</span>
-                                <span id="voiceResultLabel">Command recognized</span>
-                            </p>
-                            <p id="voiceResultAction">Light turned ON</p>
-                        </div>
-                    </article>
-                    <article class="panel example-panel">
-                        <h3>Example Commands</h3>
-                        <ul class="example-list">
-                            <li>
-                                <button type="button" class="example-row example-cmd" data-command="Turn on the light" data-source="voice">
-                                    <span class="example-icon material-symbols-outlined">graphic_eq</span>
-                                    <span>
-                                        <strong>“Turn on the light”</strong>
-                                        <small>Turns the light ON</small>
-                                    </span>
-                                </button>
-                            </li>
-                            <li>
-                                <button type="button" class="example-row example-cmd" data-command="Turn off the light" data-source="voice">
-                                    <span class="example-icon material-symbols-outlined">graphic_eq</span>
-                                    <span>
-                                        <strong>“Turn off the light”</strong>
-                                        <small>Turns the light OFF</small>
-                                    </span>
-                                </button>
-                            </li>
-                            <li>
-                                <button type="button" class="example-row example-cmd" data-command="Light on" data-source="voice">
-                                    <span class="example-icon material-symbols-outlined">graphic_eq</span>
-                                    <span>
-                                        <strong>“Light on”</strong>
-                                        <small>Turns the light ON</small>
-                                    </span>
-                                </button>
-                            </li>
-                            <li>
-                                <button type="button" class="example-row example-cmd" data-command="Light off" data-source="voice">
-                                    <span class="example-icon material-symbols-outlined">graphic_eq</span>
-                                    <span>
-                                        <strong>“Light off”</strong>
-                                        <small>Turns the light OFF</small>
-                                    </span>
-                                </button>
-                            </li>
-                        </ul>
-                    </article>
-                </div>
-                <article class="panel recent-voice-box">
-                    <h3>Recent Voice Commands</h3>
-                    <div id="recentVoiceList" class="recent-voice-list">
-                        <p class="empty-row">No voice commands yet. Tap the microphone and say LIGHT ON.</p>
-                    </div>
-                </article>
             </section>
 
             <section id="device" class="page">

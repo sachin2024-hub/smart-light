@@ -57,6 +57,7 @@ function showPage(page) {
 let lastToast = "";
 let lastToastIsError = false;
 let toastKind = "";
+let lightSynced = false;
 
 function setToast(message, isError, kind) {
     if (!message) {
@@ -480,7 +481,16 @@ async function loadSystemData() {
 
         updateDevicePage(data, online);
 
-        updateLightUI(data.light || "OFF");
+        const polledLight = data.light || "OFF";
+        const shownLight = document.getElementById("lightStatus").textContent === "LIGHT ON" ? "ON" : "OFF";
+
+        // Change made by the VC-02 / ESP32 (not by a dashboard click, which already updated the UI).
+        if (lightSynced && polledLight !== shownLight) {
+            showPopup(polledLight === "ON" ? "Light turned ON successfully." : "Light turned OFF successfully.", "success", 0);
+        }
+        lightSynced = true;
+
+        updateLightUI(polledLight);
 
         if (data.latest) {
             document.getElementById("latestCommand").textContent = data.latest.voice_command;
@@ -495,9 +505,6 @@ async function loadSystemData() {
 
         if (document.getElementById("history").classList.contains("active")) {
             loadHistory();
-        }
-        if (document.getElementById("voice").classList.contains("active")) {
-            loadRecentVoice();
         }
     } catch (error) {
         if (location.protocol === "file:") {
@@ -704,93 +711,6 @@ function setupHistoryPager() {
     });
 }
 
-function setupVoice() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const micButtons = document.querySelectorAll(".mic-trigger");
-    const micBtn = document.getElementById("micBtn");
-    const voiceTitle = document.getElementById("voiceListenTitle");
-
-    if (!SpeechRecognition) {
-        micButtons.forEach(function (button) {
-            button.disabled = true;
-        });
-        document.getElementById("voiceHint").textContent =
-            "Voice works in Chrome or Edge. Use the ON/OFF buttons for now.";
-        return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    function startListening() {
-        setToast("Listening... say LIGHT ON or LIGHT OFF", false, "info");
-        micButtons.forEach(function (button) {
-            button.classList.add("listening");
-        });
-        const micLabel = micBtn.querySelector(".btn-label");
-        if (micLabel) {
-            micLabel.textContent = "Listening...";
-        } else {
-            micBtn.textContent = "Listening...";
-        }
-        if (voiceTitle) {
-            voiceTitle.textContent = "Listening...";
-        }
-        const hint = document.getElementById("voiceHintLine");
-        if (hint) {
-            hint.textContent = "Speak now. Try saying a command below.";
-        }
-        try {
-            recognition.start();
-        } catch (error) {
-            setToast("Microphone is already listening.", false, "info");
-        }
-    }
-
-    micButtons.forEach(function (button) {
-        button.addEventListener("click", startListening);
-    });
-
-    recognition.addEventListener("result", function (event) {
-        const transcript = event.results[0][0].transcript;
-        document.getElementById("latestCommand").textContent = transcript;
-        sendCommand(transcript, "voice");
-    });
-
-    recognition.addEventListener("error", function (event) {
-        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-            setToast("Microphone access denied. Please allow microphone permission.", true, "sticky");
-        } else if (event.error === "no-speech") {
-            setToast("No speech detected. Please try again.", true, "sticky");
-        } else if (event.error === "aborted") {
-            return;
-        } else if (event.error === "audio-capture") {
-            setToast("No microphone found. Please connect a microphone and try again.", true, "sticky");
-        } else if (event.error === "network") {
-            setToast("Speech recognition network error. Check your connection and try again.", true, "sticky");
-        } else {
-            setToast("Speech recognition failed. Please try again.", true, "sticky");
-        }
-    });
-
-    recognition.addEventListener("end", function () {
-        micButtons.forEach(function (button) {
-            button.classList.remove("listening");
-        });
-        const micLabel = micBtn.querySelector(".btn-label");
-        if (micLabel) {
-            micLabel.textContent = "Speak Command";
-        } else {
-            micBtn.textContent = "Speak Command";
-        }
-        if (voiceTitle) {
-            voiceTitle.textContent = "Tap to speak";
-        }
-    });
-}
-
 function showVoiceResult(said, success, action, message) {
     const box = document.getElementById("voiceResult");
     if (!box) {
@@ -892,10 +812,9 @@ document.querySelectorAll(".example-cmd").forEach(function (button) {
 
 setupThemeToggle();
 setupHistoryPager();
-setupVoice();
 tickClock();
 loadSystemData();
 loadHistory();
 loadRecentVoice();
-setInterval(loadSystemData, 1000);
+setInterval(loadSystemData, 500);
 setInterval(tickClock, 1000);
