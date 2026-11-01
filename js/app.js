@@ -86,8 +86,13 @@ function showPopup(message, type, cooldown) {
     const key = type + "|" + message;
     const now = Date.now();
     // Skip duplicates that are visible or were shown very recently.
-    if (activePopups[key] || (popupLastShown[key] && now - popupLastShown[key] < (cooldown || 0))) {
-        return;
+    if (type === "error") {
+        if (activePopups[key] || (popupLastShown[key] && now - popupLastShown[key] < (cooldown || 0))) {
+            return;
+        }
+    } else if (activePopups[key]) {
+        // Success popups: replace the visible one so every click shows a fresh popup.
+        activePopups[key]();
     }
     popupLastShown[key] = now;
 
@@ -114,7 +119,6 @@ function showPopup(message, type, cooldown) {
     el.appendChild(text);
     el.appendChild(close);
     host.appendChild(el);
-    activePopups[key] = true;
 
     let removed = false;
     let timer = null;
@@ -124,12 +128,15 @@ function showPopup(message, type, cooldown) {
         }
         removed = true;
         clearTimeout(timer);
-        delete activePopups[key];
+        if (activePopups[key] === dismiss) {
+            delete activePopups[key];
+        }
         el.classList.add("hide");
         setTimeout(function () {
             el.remove();
         }, 300);
     }
+    activePopups[key] = dismiss;
 
     close.addEventListener("click", dismiss);
     timer = setTimeout(dismiss, 4500);
